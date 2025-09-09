@@ -1,85 +1,136 @@
 import { Component } from '@angular/core';
-import { ɵInternalFormsSharedModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from "@angular/forms";
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
+  imports: [ReactiveFormsModule],
   templateUrl: './signup.component.html',
   styleUrl: './signup.component.css',
-  imports: [ɵInternalFormsSharedModule, ReactiveFormsModule],
 })
+
+
 export class SignupComponent {
+  isSubmited = false;
 
-   isSubmited = false;
- 
-
-  signup = new FormGroup({
-    
-     email: new FormControl('', {
-          validators: [Validators.email, Validators.required]
+  // form = new FormGroup({
+  //   email: new FormControl('', {
+  //     validators: [Validators.email, Validators.required],
+  //   }),
+  //   passwords: new FormGroup({
+  //     password: new FormControl('', {
+  //       validators: [Validators.required, Validators.minLength(6)],
+  //     }),
+  //     confirmPassword: new FormControl('', {
+  //       validators: [Validators.required, Validators.minLength(6)],
+  //     }),
+  //   }),
+  //   firstName: new FormControl('', { validators: [Validators.required] }),
+  //   lastName: new FormControl('', { validators: [Validators.required] }),
+  //   address: new FormGroup({
+  //     street: new FormControl('', { validators: [Validators.required] }),
+  //     number: new FormControl('', { validators: [Validators.required] }),
+  //     postalCode: new FormControl('', { validators: [Validators.required] }),
+  //     city: new FormControl('', { validators: [Validators.required] }),
+  //   }),
+  //   role: new FormControl<
+  //     'student' | 'teacher' | 'employee' | 'founder' | 'other'
+  //   >('student', { validators: [Validators.required] }),
+  //   agree: new FormControl(false, { validators: [Validators.required] }),
+  // });
+passwordsMatchValidator = (control: AbstractControl): ValidationErrors | null => {
+  const password = control.get('password');
+  const confirmPassword = control.get('confirmPassword');
+  if (password?.value !== confirmPassword?.value) {
+    return { passwordsNotMatching: true };
+  }
+  return null;
+};
+   form = new FormGroup({
+    email: new FormControl('', {
+      validators: [Validators.email, Validators.required],
+    }),
+    passwords: new FormGroup(
+      {
+        password: new FormControl('', {
+          validators: [Validators.required, Validators.minLength(6)],
         }),
-        password: new FormControl('', [
-          Validators.required,
-          Validators.minLength(6), 
-        ]),
-         ConfirmPassword: new FormControl('', [
-          Validators.required,
-          Validators.minLength(6), 
-        ])
-      });
+        confirmPassword: new FormControl('', {
+          validators: [Validators.required, Validators.minLength(6)],
+        }),
+      },
+      { validators: [this.passwordsMatchValidator] }
+    ),
+    firstName: new FormControl('', { validators: [Validators.required] }),
+    lastName: new FormControl('', { validators: [Validators.required] }),
+    address: new FormGroup({
+      street: new FormControl('', { validators: [Validators.required] }),
+      location: new FormControl('', { validators: [Validators.required] }),
+      pincode: new FormControl('', { validators: [Validators.required] }),
+      city: new FormControl('', { validators: [Validators.required] }),
+    }),
+    role: new FormControl<
+      'student' | 'teacher' | 'employee' | 'founder' | 'other'
+    >('student', { validators: [Validators.required] }),
+    agree: new FormControl(false, { validators: [Validators.requiredTrue] }),
+  });
 
-       get emailIsInvalid() {
+ get emailIsInvalid() {
     return (
-      this.signup.controls.email.touched &&
-      this.signup.controls.email.dirty &&
-      this.signup.controls.email.invalid
+      this.form.controls.email.touched &&
+      this.form.controls.email.dirty &&
+      this.form.controls.email.invalid
     );
   }
 
-    get passwordIsInvalid() {
+   get passwordIsInvalid() {
     return (
-      this.signup.controls.password.touched &&
-      this.signup.controls.password.dirty &&
-      this.signup.controls.password.invalid
+      this.form.controls.passwords.touched &&
+      this.form.controls.passwords.dirty &&
+      this.form.controls.passwords.invalid
     )
   
 }
   get ConfirmPasswordIsInvalid() {
     return (
-      this.signup.controls.ConfirmPassword.touched &&
-      this.signup.controls.ConfirmPassword.dirty &&
-      this.signup.controls.ConfirmPassword.invalid
+      this.form.controls.passwords.touched &&
+      this.form.controls.passwords.dirty &&
+      this.form.controls.passwords.invalid
     )
   
-}
+} 
+  onSubmit() {
+    console.log(this.form);
+     // Mark all fields as touched to trigger validation display
+    this.form.markAllAsTouched();
+    this.form.controls.email.markAsDirty();
+    this.form.controls.passwords.markAsDirty();
 
 
- passwordMatch = (this.signup.value.password === this.signup.value.ConfirmPassword)
-  onSignUp() {
-    // Mark all fields as touched to trigger validation display
-    this.signup.markAllAsTouched();
-    this.signup.controls.email.markAsDirty();
-    this.signup.controls.password.markAsDirty();
-    this.signup.controls.ConfirmPassword.markAsDirty();
 
-
-    if (this.signup.invalid) {
+    if (this.form.invalid) {
       return;
     }
 
 
-    if(this.passwordMatch){
-    console.log(this.signup);
-    const enteredEmail = this.signup.value.email;
-    const enteredPassword = this.signup.value.password;
-    console.log(enteredEmail, enteredPassword);
+    console.log(this.form.value);
     
-    this.signup.reset();
+    this.form.reset();
     this.isSubmited = true;
     
     setTimeout(() => {
       this.isSubmited = false;
     }, 3000);
   }
-}
+
+  onReset() {
+    this.form.reset();
+  }
 }
