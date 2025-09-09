@@ -1,10 +1,16 @@
-<form>
+<form [formGroup]="signup" (ngSubmit)="onSignUp()">
   <h2>Welcome on board!</h2>
   <p>We just need a little bit of data from you to get you started 🚀</p>
 
   <div class="control">
     <label for="email">Email</label>
-    <input id="email" type="email" name="email" />
+    <input 
+    id="email" 
+    type="email" 
+    name="email"
+    autocomplete="email"
+    [formControl]="signup.controls.email"
+     />
   </div>
 
   <div class="control-row">
@@ -14,6 +20,8 @@
         id="password"
         type="password"
         name="password"
+        formControlName="password"
+        autocomplete="current-password"
       />
     </div>
 
@@ -23,6 +31,7 @@
         id="confirm-password"
         type="password"
         name="confirm-password"
+        [formControl]="signup.controls.ConfirmPassword"
       />
     </div>
   </div>
@@ -144,4 +153,20 @@
     <button type="reset" class="button button-flat">Reset</button>
     <button type="submit" class="button">Sign up</button>
   </p>
+
+    @if (isSubmited) {
+     <p class="control-error">Form has been submited</p>
+  }
+   
+    @if (emailIsInvalid) {
+    <p class="control-error">Please enter a valid email address.</p>
+  }
+
+   @if (passwordIsInvalid) {
+    <p class="control-error">Please enter a Password and Minimum 6 character.</p>
+  }
+
+   @if ( ConfirmPasswordIsInvalid) {
+     <p class="control-error">password not math correctly</p>
+  }
 </form>

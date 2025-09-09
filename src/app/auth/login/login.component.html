@@ -1,17 +1,65 @@
-<form>
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
   <h2>Login</h2>
 
   <div class="control-row">
     <div class="control no-margin">
       <label for="email">Email</label>
-      <input id="email" type="email" />
+      <input 
+        id="email" 
+        type="email" 
+        name="email" 
+        autocomplete="email"
+        [formControl]="form.controls.email"/>
     </div>
 
     <div class="control no-margin">
       <label for="password">Password</label>
-      <input id="password" type="password" />
+      <input 
+        id="password" 
+        type="password" 
+        formControlName="password"
+        autocomplete="current-password"/>
     </div>
 
-    <button class="button">Login</button>
+    <button class="button" type="submit">Login</button>
   </div>
+
+
+    @if (emailIsInvalid) {
+    <p class="control-error">Please enter a valid email address.</p>
+  }
+
+    @if (passwordIsInvalid) {
+        <div class="control-error">
+          @if (form.controls.password.errors?.['required']) {
+            <p>Password is required.</p>
+          }
+          @if (form.controls.password.errors?.['minlength']) {
+            <p>Minimum 8 characters required.</p>
+          }
+          
+          @if (getPasswordErrors(); as passwordErrors) {
+            <p>Password must contain:</p>
+            
+              @if (passwordErrors?.uppercase) {
+                At least one uppercase letter (A-Z)
+              }
+              @if (passwordErrors?.lowercase) {
+                At least one lowercase letter (a-z)
+              }
+              @if (passwordErrors?.number) {
+                At least one number (0-9)
+              }
+              @if (passwordErrors?.specialChar) {
+                At least one special character ({{specialChars}})
+              }
+           
+          }
+        </div>
+      }
+
+  @if (isSubmited) {
+     <p class="control-error">Form has been submited</p>
+  }
+
 </form>
