@@ -20,6 +20,20 @@ import {
 export class SignupComponent {
   isSubmited = false;
   acquisitionOptions = ['google', 'friend', 'other'];
+  // Derived UI state
+  get passwordStrength(): 'empty' | 'weak' | 'medium' | 'strong' {
+    const value: string = this.passwordControl?.value || '';
+    if (!value) return 'empty';
+    let score = 0;
+    if (value.length >= 8) score++;
+    if (/[A-Z]/.test(value)) score++;
+    if (/[0-9]/.test(value)) score++;
+    if (/[^A-Za-z0-9]/.test(value)) score++;
+    if (value.length >= 12) score++;
+    if (score >= 4) return 'strong';
+    if (score >= 2) return 'medium';
+    return 'weak';
+  }
 
   passwordsMatchValidator = (control: AbstractControl): ValidationErrors | null => {
     const password = control.get('password')?.value;
@@ -58,7 +72,9 @@ export class SignupComponent {
       acquisitionArray.push(new FormControl(checkbox.value));
     } else {
       const index = acquisitionArray.controls.findIndex(c => c.value === checkbox.value);
-      acquisitionArray.removeAt(index);
+      if (index > -1) {
+        acquisitionArray.removeAt(index);
+      }
     }
   }
 
