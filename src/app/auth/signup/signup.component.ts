@@ -1,133 +1,76 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common'; 
 import {
   AbstractControl,
+  FormArray,
   FormControl,
   FormGroup,
   ReactiveFormsModule,
-  ValidationErrors,
   Validators,
+  ValidationErrors
 } from '@angular/forms';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './signup.component.html',
-  styleUrl: './signup.component.css',
+  styleUrls: ['./signup.component.css'],
 })
-
-
 export class SignupComponent {
   isSubmited = false;
+  acquisitionOptions = ['google', 'friend', 'other'];
 
-  // form = new FormGroup({
-  //   email: new FormControl('', {
-  //     validators: [Validators.email, Validators.required],
-  //   }),
-  //   passwords: new FormGroup({
-  //     password: new FormControl('', {
-  //       validators: [Validators.required, Validators.minLength(6)],
-  //     }),
-  //     confirmPassword: new FormControl('', {
-  //       validators: [Validators.required, Validators.minLength(6)],
-  //     }),
-  //   }),
-  //   firstName: new FormControl('', { validators: [Validators.required] }),
-  //   lastName: new FormControl('', { validators: [Validators.required] }),
-  //   address: new FormGroup({
-  //     street: new FormControl('', { validators: [Validators.required] }),
-  //     number: new FormControl('', { validators: [Validators.required] }),
-  //     postalCode: new FormControl('', { validators: [Validators.required] }),
-  //     city: new FormControl('', { validators: [Validators.required] }),
-  //   }),
-  //   role: new FormControl<
-  //     'student' | 'teacher' | 'employee' | 'founder' | 'other'
-  //   >('student', { validators: [Validators.required] }),
-  //   agree: new FormControl(false, { validators: [Validators.required] }),
-  // });
-passwordsMatchValidator = (control: AbstractControl): ValidationErrors | null => {
-  const password = control.get('password');
-  const confirmPassword = control.get('confirmPassword');
-  if (password?.value !== confirmPassword?.value) {
-    return { passwordsNotMatching: true };
-  }
-  return null;
-};
-   form = new FormGroup({
-    email: new FormControl('', {
-      validators: [Validators.email, Validators.required],
-    }),
-    passwords: new FormGroup(
-      {
-        password: new FormControl('', {
-          validators: [Validators.required, Validators.minLength(6)],
-        }),
-        confirmPassword: new FormControl('', {
-          validators: [Validators.required, Validators.minLength(6)],
-        }),
-      },
-      { validators: [this.passwordsMatchValidator] }
-    ),
-    firstName: new FormControl('', { validators: [Validators.required] }),
-    lastName: new FormControl('', { validators: [Validators.required] }),
+  passwordsMatchValidator = (control: AbstractControl): ValidationErrors | null => {
+    const password = control.get('password')?.value;
+    const confirmPassword = control.get('confirmPassword')?.value;
+    return password !== confirmPassword ? { passwordsNotMatching: true } : null;
+  };
+
+  form = new FormGroup({
+    email: new FormControl('', [Validators.required, Validators.email]),
+    passwords: new FormGroup({
+      password: new FormControl('', [Validators.required, Validators.minLength(6)]),
+      confirmPassword: new FormControl('', [Validators.required, Validators.minLength(6)]),
+    }, { validators: this.passwordsMatchValidator }),
+    firstName: new FormControl('', Validators.required),
+    lastName: new FormControl('', Validators.required),
     address: new FormGroup({
-      street: new FormControl('', { validators: [Validators.required] }),
-      location: new FormControl('', { validators: [Validators.required] }),
-      pincode: new FormControl('', { validators: [Validators.required] }),
-      city: new FormControl('', { validators: [Validators.required] }),
+      street: new FormControl('', Validators.required),
+      location: new FormControl('', Validators.required),
+      pincode: new FormControl('', Validators.required),
+      city: new FormControl('', Validators.required),
     }),
-    role: new FormControl<
-      'student' | 'teacher' | 'employee' | 'founder' | 'other'
-    >('student', { validators: [Validators.required] }),
-    agree: new FormControl(false, { validators: [Validators.requiredTrue] }),
+    role: new FormControl('', Validators.required),
+    acquisition: new FormArray([]),
+    agree: new FormControl(false, Validators.requiredTrue),
   });
 
- get emailIsInvalid() {
-    return (
-      this.form.controls.email.touched &&
-      this.form.controls.email.dirty &&
-      this.form.controls.email.invalid
-    );
+  get emailControl() { return this.form.get('email') as FormControl; }
+  get passwordControl() { return this.form.get('passwords.password') as FormControl; }
+  get confirmPasswordControl() { return this.form.get('passwords.confirmPassword') as FormControl; }
+
+  onAcquisitionChange(event: Event) {
+    const checkbox = event.target as HTMLInputElement;
+    const acquisitionArray = this.form.get('acquisition') as FormArray;
+
+    if (checkbox.checked) {
+      acquisitionArray.push(new FormControl(checkbox.value));
+    } else {
+      const index = acquisitionArray.controls.findIndex(c => c.value === checkbox.value);
+      acquisitionArray.removeAt(index);
+    }
   }
 
-   get passwordIsInvalid() {
-    return (
-      this.form.controls.passwords.touched &&
-      this.form.controls.passwords.dirty &&
-      this.form.controls.passwords.invalid
-    )
-  
-}
-  get ConfirmPasswordIsInvalid() {
-    return (
-      this.form.controls.passwords.touched &&
-      this.form.controls.passwords.dirty &&
-      this.form.controls.passwords.invalid
-    )
-  
-} 
   onSubmit() {
-    console.log(this.form);
-     // Mark all fields as touched to trigger validation display
     this.form.markAllAsTouched();
-    this.form.controls.email.markAsDirty();
-    this.form.controls.passwords.markAsDirty();
-
-
-
-    if (this.form.invalid) {
-      return;
-    }
-
+    if (this.form.invalid) return;
 
     console.log(this.form.value);
-    
-    this.form.reset();
     this.isSubmited = true;
-    
-    setTimeout(() => {
-      this.isSubmited = false;
-    }, 3000);
+    this.form.reset();
+
+    setTimeout(() => this.isSubmited = false, 3000);
   }
 
   onReset() {
